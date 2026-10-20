@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Printer Queue Management System</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 20px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px #0001;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #2349bd;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 8px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #315ee8;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #2349bd;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .actions button {
+            flex: 1;
+        }
+
+        #printButton {
+            background: #137547;
+        }
+
+        #clearButton {
+            background: #b42318;
+        }
+
+        ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        li {
+            background: #eef2ff;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .front {
+            border-left: 5px solid #315ee8;
+            font-weight: bold;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .stats {
+            text-align: center;
+            padding: 12px;
+            background: #f5f7fb;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 450px) {
+            .input-area {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🖨️ Printer Queue Management System</h1>
+
+    <p style="text-align:center">
+        Manage print jobs using the FIFO queue principle.
+    </p>
+
+    <h2>Add Print Job</h2>
+
+    <div class="input-area">
+        <input
+            type="text"
+            id="documentName"
+            placeholder="Enter document name"
+            maxlength="100"
+        >
+
+        <button onclick="addJob()">Add Job</button>
+    </div>
+
+    <div class="stats">
+        <p>Documents Waiting: <strong id="queueCount">0</strong></p>
+        <p>Documents Printed: <strong id="printedCount">0</strong></p>
+    </div>
+
+    <h2>Print Queue</h2>
+
+    <ul id="queueList"></ul>
+
+    <div class="actions">
+        <button id="printButton" onclick="printNext()">
+            Print Next Document
+        </button>
+
+        <button id="clearButton" onclick="clearQueue()">
+            Clear Queue
+        </button>
+    </div>
+
+    <p id="message" role="status" aria-live="polite">
+        The queue is empty.
+    </p>
+
+</div>
+
+<script>
+    // Create an empty queue
+    let printQueue = [];
+    let printedCount = 0;
+
+    // Add a document to the queue
+    function addJob() {
+        const input = document.getElementById("documentName");
+        const documentName = input.value.trim();
+
+        if (documentName === "") {
+            showMessage("Please enter a document name.");
+            return;
+        }
+
+        // ENQUEUE: Add document to the rear
+        printQueue.push(documentName);
+
+        input.value = "";
+
+        displayQueue();
+
+        showMessage(documentName + " added to the queue.");
+    }
+
+    // Display all documents in the queue
+    function displayQueue() {
+        const queueList = document.getElementById("queueList");
+
+        queueList.innerHTML = "";
+
+        printQueue.forEach(function(documentName, index) {
+            const item = document.createElement("li");
+
+            item.textContent = (index + 1) + ". " + documentName;
+
+            if (index === 0) {
+                item.classList.add("front");
+                item.textContent += " (NEXT TO PRINT)";
+            }
+
+            queueList.appendChild(item);
+        });
+
+        document.getElementById("queueCount").textContent =
+            printQueue.length;
+
+        document.getElementById("printedCount").textContent =
+            printedCount;
+
+        if (printQueue.length === 0) {
+            queueList.innerHTML =
+                "<li>No documents waiting to print.</li>";
+        }
+    }
+
+    // Process the first document in the queue
+    function printNext() {
+        if (printQueue.length === 0) {
+            showMessage("The queue is empty. No documents to print.");
+            return;
+        }
+
+        // DEQUEUE: Remove the first document
+        const documentName = printQueue.shift();
+
+        printedCount++;
+
+        displayQueue();
+
+        showMessage("Printing completed: " + documentName);
+    }
+
+    // Remove all waiting documents
+    function clearQueue() {
+        printQueue = [];
+
+        displayQueue();
+
+        showMessage("The queue has been cleared.");
+    }
+
+    // Display a message to the user
+    function showMessage(text) {
+        document.getElementById("message").textContent = text;
+    }
+
+    // Display the initial empty queue
+    displayQueue();
+</script>
+
+</body>
+</html>
